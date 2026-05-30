@@ -261,7 +261,7 @@ Each code submission runs inside an isolated Docker container.
 ## Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/TrueJudge.git
+git clone https://github.com/yourusername/OnlineJudge.git
 ```
 
 ## Backend Setup
