@@ -258,45 +258,78 @@ Each code submission runs inside an isolated Docker container.
 
 # 📅 Development Roadmap
 
-| Status | Day    | Module                  | Tasks                                                                       |
-| ------ | ------ | ----------------------- | --------------------------------------------------------------------------- |
-| ⬜      | Day 1  | Project Setup           | Initialize frontend & backend, setup folder structure, install dependencies |
-| ⬜      | Day 2  | Database Design         | Design MongoDB schemas and connect MongoDB Atlas                            |
-| ⬜      | Day 3  | Authentication Backend  | Create Register/Login APIs using JWT & bcrypt                               |
-| ⬜      | Day 4  | Authentication Frontend | Build Login & Signup pages with protected routes                            |
-| ⬜      | Day 5  | Problem Module          | Create problem schema, APIs, and problem listing page                       |
-| ⬜      | Day 6  | Problem Details Page    | Build detailed problem page with examples & constraints                     |
-| ⬜      | Day 7  | Code Editor Integration | Integrate Monaco Editor for coding arena                                    |
-| ⬜      | Day 8  | Submission API          | Create submission endpoint and save submissions                             |
-| ⬜      | Day 9  | Local Code Execution    | Execute code using child_process                                            |
-| ⬜      | Day 10 | Verdict Engine          | Compare outputs and generate verdicts                                       |
-| ⬜      | Day 11 | Docker Integration      | Sandbox execution using Docker containers                                   |
-| ⬜      | Day 12 | Queue System            | Setup BullMQ + Redis async queue                                            |
-| ⬜      | Day 13 | Submission History      | Show previous submissions and verdict logs                                  |
-| ⬜      | Day 14 | Leaderboard             | Build rankings and scoring system                                           |
-| ⬜      | Day 15 | Security                | Add rate limiting, validation, and RBAC                                     |
-| ⬜      | Day 16 | Optimization            | Add caching and database indexing                                           |
-| ⬜      | Day 17 | Admin Panel             | Create admin controls for problems and users                                |
-| ⬜      | Day 18 | Contest System          | Build contest creation and participation flow                               |
-| ⬜      | Day 19 | Testing                 | Stress test APIs and submission pipeline                                    |
-| ⬜      | Day 20 | Deployment              | Deploy frontend, backend, Redis, and MongoDB                                |
-| ⬜      | Day 21 | Documentation           | Finalize README, HLD, and project docs                                      |
+## Week 1 — Foundation
+
+* [ ] **Day 1 — Project Setup**
+  Initialize frontend & backend, setup folder structure, install dependencies
+
+* [ ] **Day 2 — Database Design**
+  Design MongoDB schemas and connect MongoDB Atlas
+
+* [ ] **Day 3 — Authentication Backend**
+  Create Register/Login APIs using JWT & bcrypt
+
+* [ ] **Day 4 — Authentication Frontend**
+  Build Login & Signup pages with protected routes
+
+* [ ] **Day 5 — Problem Module**
+  Create problem schema, APIs, and problem listing page
+
+* [ ] **Day 6 — Problem Details Page**
+  Build detailed problem page with examples & constraints
+
+* [ ] **Day 7 — Code Editor Integration**
+  Integrate Monaco Editor for coding arena
 
 ---
 
-# ✅ Progress Tracker
+## Week 2 — Online Judge Core
 
-* [ ] Backend Setup Complete
-* [ ] Frontend Setup Complete
-* [ ] MongoDB Connected
-* [ ] Authentication Working
-* [ ] Problem APIs Ready
-* [ ] Monaco Editor Integrated
-* [ ] Submission Pipeline Working
-* [ ] Docker Sandbox Ready
-* [ ] Queue System Working
-* [ ] Leaderboard Implemented
-* [ ] Project Deployed
+* [ ] **Day 8 — Submission API**
+  Create submission endpoint and save submissions
+
+* [ ] **Day 9 — Local Code Execution**
+  Execute code using child_process
+
+* [ ] **Day 10 — Verdict Engine**
+  Compare outputs and generate verdicts
+
+* [ ] **Day 11 — Docker Integration**
+  Sandbox execution using Docker containers
+
+* [ ] **Day 12 — Queue System**
+  Setup BullMQ + Redis async queue
+
+* [ ] **Day 13 — Submission History**
+  Show previous submissions and verdict logs
+
+* [ ] **Day 14 — Leaderboard**
+  Build rankings and scoring system
+
+---
+
+## Week 3 — Advanced Features
+
+* [ ] **Day 15 — Security**
+  Add rate limiting, validation, and RBAC
+
+* [ ] **Day 16 — Optimization**
+  Add caching and database indexing
+
+* [ ] **Day 17 — Admin Panel**
+  Create admin controls for problems and users
+
+* [ ] **Day 18 — Contest System**
+  Build contest creation and participation flow
+
+* [ ] **Day 19 — Testing**
+  Stress test APIs and submission pipeline
+
+* [ ] **Day 20 — Deployment**
+  Deploy frontend, backend, Redis, and MongoDB
+
+* [ ] **Day 21 — Documentation**
+  Finalize README, HLD, and project docs
 
 ---
 
