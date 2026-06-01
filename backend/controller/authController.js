@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const AuthUser = require('../model/authUser');
+const AuthUser = require('../model/User');
 const jwt = require('jsonwebtoken');
 const { validateUser } = require('../validators/userValidator');
 
@@ -21,7 +21,7 @@ const register = async (req, res) => {
     //console.log(firstName, lastName, email, password);
 
     //validate the user data
-    const result = validateUser({ firstName, lastName, email, password });
+    const result = validateUser(req.body);
     if (Object.keys(result).length > 0) {
         return res.status(400).json({ message: "Invalid user data", errors: result });
     }
@@ -51,7 +51,40 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    res.send("Login Page");
+    
+    //get email and password from the request body
+    const { email, password } = req.body;
+
+    //check if all required fields are present
+    if (!email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    //validate the user email and password format
+    const result = validateUser(req.body, true);
+    if (Object.keys(result).length > 0) {
+        return res.status(400).json({ message: "Invalid user data", errors: result });
+    }
+
+    //find the user in the database
+    const foundUser = await AuthUser.findOne({ email });
+    if (!foundUser) {
+        return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    //compare the password with the hashed password in the database
+    const isMatch = await bcrypt.compare(password, foundUser.password);
+    if (!isMatch) {
+        return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    //generate a JWT token
+    const token = jwt.sign({ id: foundUser._id, email: foundUser.email }, process.env.JWT_SECRET, {
+        expiresIn: '1h'
+    });
+
+    //send the token to the client
+    return res.status(200).json({ message: "Login successful", token});
 }
 
 module.exports = { register, login };
