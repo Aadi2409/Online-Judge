@@ -22,16 +22,40 @@ export default function Register() {
     return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("http://localhost:3000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+      const data = await res.json();
+      console.log(data);
+      if (res.ok) {
+        localStorage.setItem("user", JSON.stringify(data.newUser));
+        setSuccessMsg(`Account created! Welcome, ${form.username}!`);
+        setTimeout(() => navigate("/login"), 2000);
+      } else {
+        setErrors({ general: data.message || "Registration failed. Try again." });
+      }
+    } catch (err) {
+      setErrors({ general: "An error occurred. Please try again." });
+    } finally {
       setLoading(false);
-      setSuccessMsg(`Account created! Welcome, ${form.username}!`);
-    }, 1500);
+    }
+
   };
 
   const handleChange = (e) => {
@@ -215,6 +239,9 @@ export default function Register() {
               </div>
 
               {/* Submit */}
+              {errors.general && (
+                <p className="text-xs mb-3 text-center" style={{ color: "#f87171" }}>{errors.general}</p>
+              )}
               <button
                 type="submit"
                 disabled={loading}

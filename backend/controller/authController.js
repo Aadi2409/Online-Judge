@@ -3,6 +3,13 @@ const AuthUser = require('../model/User');
 const jwt = require('jsonwebtoken');
 const { validateUser } = require('../validators/userValidator');
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 3600000, // 1 hour
+};
+
 const register = async (req, res) => {
 
     //get the user data from the request body
@@ -12,13 +19,13 @@ const register = async (req, res) => {
     // const email = req.body.email;
     // const password = req.body.password;
 
-    const { firstName, lastName, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     //check if the user data exists
-    if (!firstName || !lastName || !email || !password) {
+    if (!username || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
     }
-    //console.log(firstName, lastName, email, password);
+    //console.log(username, email, password);
 
     //validate the user data
     const result = validateUser(req.body);
@@ -37,26 +44,26 @@ const register = async (req, res) => {
 
     //save the user data to the database
     const newUser = await AuthUser.create({
-        firstName,
-        lastName,
+        username,
         email,
         password: hashedPassword
     });
 
     //send a response to the client
-    const token = jwt.sign({ id: newUser._id, email: newUser.email },process.env.JWT_SECRET,{
+    const token = jwt.sign({ id: newUser._id, username: newUser.username }, process.env.JWT_SECRET, {
         expiresIn: '1h',
-     });
-    return res.status(201).json({ message: "User registered successfully", newUser, token });
+    });
+    res.cookie('token', token, cookieOptions);
+    return res.status(201).json({ message: "User registered successfully", newUser });
 }
 
 const login = async (req, res) => {
-    
-    //get email and password from the request body
-    const { email, password } = req.body;
+
+    //get username and password from the request body
+    const { username, password } = req.body;
 
     //check if all required fields are present
-    if (!email || !password) {
+    if (!username || !password) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -67,24 +74,34 @@ const login = async (req, res) => {
     }
 
     //find the user in the database
-    const foundUser = await AuthUser.findOne({ email });
+    const foundUser = await AuthUser.findOne({ username });
     if (!foundUser) {
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res.status(400).json({ message: "Invalid username or password" });
     }
 
     //compare the password with the hashed password in the database
     const isMatch = await bcrypt.compare(password, foundUser.password);
     if (!isMatch) {
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res.status(400).json({ message: "Invalid username or password" });
     }
 
     //generate a JWT token
-    const token = jwt.sign({ id: foundUser._id, email: foundUser.email }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: foundUser._id, username: foundUser.username }, process.env.JWT_SECRET, {
         expiresIn: '1h'
     });
 
     //send the token to the client
-    return res.status(200).json({ message: "Login successful", token});
+    res.cookie('token', token, cookieOptions);
+    return res.status(200).json({ message: "Login successful", foundUser });
 }
 
-module.exports = { register, login };
+const logout = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    });
+    return res.status(200).json({ message: "Logged out successfully" });
+};
+
+module.exports = { register, login, logout };

@@ -3,23 +3,21 @@ function validateUser(user, isLogin = false) {
 
     // Registration-only checks
     if (!isLogin) {
-        if (!user.firstName || user.firstName.trim() === "") {
-            errors.firstName = "First name is required";
-        }
-
-        if (!user.lastName || user.lastName.trim() === "") {
-            errors.lastName = "Last name is required";
+        if (!user.username || user.username.trim() === "") {
+            errors.username = "User name is required";
         }
     }
 
-    // Common checks
-    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Registration-only email checks
+    if (!isLogin) {
+        let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!user.email || user.email.trim() === "") {
-        errors.email = "Email is required";
-    }
-    else if (!emailRegex.test(user.email)) {
-        errors.email = "Invalid email format";
+        if (!user.email || user.email.trim() === "") {
+            errors.email = "Email is required";
+        }
+        else if (!emailRegex.test(user.email)) {
+            errors.email = "Invalid email format";
+        }
     }
 
     if (!user.password || user.password.trim() === "") {

@@ -18,16 +18,38 @@ export default function Login() {
     return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("http://localhost:3000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          username: form.username,
+          password: form.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrors({ general: data.message || "Invalid Credentials" });
+      } else {
+        localStorage.setItem("user", JSON.stringify(data.foundUser));
+        navigate("/");
+      }
+    } catch (err) {
+      setErrors({ general: "Server Error. Please try again." });
+    } finally {
       setLoading(false);
-      setSuccessMsg(`Welcome back, ${form.username}!`);
-    }, 1500);
+    }
   };
 
   const handleChange = (e) => {
