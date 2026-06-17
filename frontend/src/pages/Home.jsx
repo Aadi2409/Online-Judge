@@ -25,6 +25,14 @@ const diffColor = {
 export default function Home() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [username] = useState(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored)?.username || "" : "";
+    } catch (err) {
+      return "";
+    }
+  });
 
   const handleLogout = async () => {
     await fetch("http://localhost:3000/api/auth/logout", {
@@ -108,7 +116,9 @@ export default function Home() {
       <div className="relative z-10 px-6 pt-12 pb-8 max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-px" style={{ background: "rgba(220,38,38,0.6)" }} />
-          <span className="text-xs tracking-[0.35em] uppercase" style={{ color: "#dc2626" }}>Welcome back</span>
+          <span className="text-xs tracking-[0.35em] uppercase" style={{ color: "#dc2626" }}>
+            Welcome back{username ? `, ${username}` : ""}
+          </span>
         </div>
         <h1 className="text-5xl font-black uppercase mb-2"
           style={{ color: "#fff", textShadow: "0 0 40px rgba(220,38,38,0.3)", letterSpacing: "0.08em", lineHeight: 1.1 }}>

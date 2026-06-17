@@ -1,55 +1,71 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const allProblems = [
-  { id: 1,  title: "Two Sum",                     difficulty: "Easy",   category: "Arrays",        solved: true,  acceptance: "48%" },
-  { id: 2,  title: "Reverse Linked List",          difficulty: "Easy",   category: "Linked List",   solved: true,  acceptance: "71%" },
-  { id: 3,  title: "Valid Parentheses",            difficulty: "Easy",   category: "Stack",         solved: true,  acceptance: "40%" },
-  { id: 4,  title: "Binary Search",               difficulty: "Easy",   category: "Search",        solved: false, acceptance: "55%" },
-  { id: 5,  title: "Merge Intervals",             difficulty: "Medium", category: "Arrays",        solved: false, acceptance: "45%" },
-  { id: 6,  title: "3Sum",                        difficulty: "Medium", category: "Arrays",        solved: true,  acceptance: "32%" },
-  { id: 7,  title: "Longest Substring",           difficulty: "Medium", category: "Sliding Window",solved: false, acceptance: "33%" },
-  { id: 8,  title: "Word Break",                  difficulty: "Medium", category: "DP",            solved: false, acceptance: "44%" },
-  { id: 9,  title: "LRU Cache",                   difficulty: "Hard",   category: "Design",        solved: false, acceptance: "39%" },
-  { id: 10, title: "Trapping Rain Water",         difficulty: "Hard",   category: "Arrays",        solved: false, acceptance: "57%" },
-  { id: 11, title: "Median of Two Sorted Arrays", difficulty: "Hard",   category: "Binary Search", solved: false, acceptance: "36%" },
-  { id: 12, title: "Climbing Stairs",             difficulty: "Easy",   category: "DP",            solved: true,  acceptance: "51%" },
-  { id: 13, title: "House Robber",                difficulty: "Medium", category: "DP",            solved: false, acceptance: "47%" },
-  { id: 14, title: "Course Schedule",             difficulty: "Medium", category: "Graph",         solved: false, acceptance: "45%" },
-  { id: 15, title: "Serialize Binary Tree",       difficulty: "Hard",   category: "Trees",         solved: false, acceptance: "54%" },
-];
-
-const diffColor  = { Easy: "#4ade80", Medium: "#facc15", Hard: "#f87171" };
-const diffBg     = { Easy: "rgba(74,222,128,0.08)", Medium: "rgba(250,204,21,0.08)", Hard: "rgba(248,113,113,0.08)" };
+const diffColor = { Easy: "#4ade80", Medium: "#facc15", Hard: "#f87171" };
+const diffBg = { Easy: "rgba(74,222,128,0.08)", Medium: "rgba(250,204,21,0.08)", Hard: "rgba(248,113,113,0.08)" };
 const diffBorder = { Easy: "rgba(74,222,128,0.25)", Medium: "rgba(250,204,21,0.25)", Hard: "rgba(248,113,113,0.25)" };
-const categories = ["All", ...Array.from(new Set(allProblems.map((p) => p.category)))];
+
 export default function Problems() {
   const navigate = useNavigate();
-  const [search, setSearch]         = useState("");
+  const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState("All");
-  const [category, setCategory]     = useState("All");
-  const [status, setStatus]         = useState("All"); // All | Solved | Unsolved
+  const [category, setCategory] = useState("All");
+  const [status, setStatus] = useState("All");
+  const [allProblems, setAllProblems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/problems", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setAllProblems(data.problems);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, []);
 
   const handleLogout = async () => {
     await fetch("http://localhost:3000/api/auth/logout", {
       method: "POST",
-      credentials: "include", // sends cookie so backend can clear it
+      credentials: "include",
     });
     localStorage.removeItem("user");
     navigate("/login");
   };
 
   const filtered = allProblems.filter((p) => {
-    const matchSearch     = p.title.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
     const matchDifficulty = difficulty === "All" || p.difficulty === difficulty;
-    const matchCategory   = category === "All"   || p.category === category;
-    const matchStatus     =
-      status === "All"     ? true :
-      status === "Solved"  ? p.solved :
-      !p.solved;
+    const matchCategory = category === "All" || p.category === category;
+    const matchStatus =
+      status === "All" ? true :
+        status === "Solved" ? p.solved :
+          !p.solved;
     return matchSearch && matchDifficulty && matchCategory && matchStatus;
   });
 
+  // ── CHANGE 1: loading is now a tiny early return, NOT wrapping the whole page ──
+  if (loading) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "#0d0d0d", fontFamily: "'Courier New', monospace" }}
+      >
+        <div className="text-center">
+          <div className="text-4xl mb-4" style={{ color: "rgba(220,38,38,0.3)" }}>◈</div>
+          <span style={{ color: "#dc2626", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase" }}>
+            Loading Problems...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main return — only reached after loading is false ──
   return (
     <div
       className="min-h-screen relative overflow-x-hidden"
@@ -233,7 +249,9 @@ export default function Problems() {
             </div>
           ) : (
             filtered.map((p, i) => (
-              <div key={p.id}
+              // ── CHANGE 2: key is p._id, onClick navigates to problem detail, ID shows i+1 ──
+              <div key={p._id}
+                onClick={() => navigate(`/problems/${p._id}`)}
                 className="grid px-6 py-4 items-center transition-all duration-200 cursor-pointer"
                 style={{
                   gridTemplateColumns: "40px 1fr 140px 130px 80px 60px",
@@ -243,8 +261,8 @@ export default function Problems() {
                 onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(220,38,38,0.04)")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
-                {/* ID */}
-                <span className="text-xs" style={{ color: "#444" }}>{p.id}</span>
+                {/* ID — CHANGE 3: use i+1 instead of p.id */}
+                <span className="text-xs" style={{ color: "#444" }}>{i + 1}</span>
 
                 {/* Title */}
                 <span className="text-sm font-bold truncate"
@@ -287,7 +305,7 @@ export default function Problems() {
           )}
         </div>
 
-        {/* Pagination stub */}
+        {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
           <span className="text-xs uppercase tracking-widest" style={{ color: "#444" }}>
             Showing {filtered.length} of {allProblems.length} problems
