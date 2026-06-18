@@ -3,6 +3,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Home from './pages/Home'
 import Problems from './pages/Problems'
+import ProblemDetail from './pages/ProblemDetail'
 import ProtectedRoute from './ProtectedRoute'
 
 function App() {
@@ -18,6 +19,9 @@ function App() {
           <ProtectedRoute>
             <Problems />
           </ProtectedRoute>
+        } />
+        <Route path="/problems/:id" element={
+          <ProtectedRoute><ProblemDetail /></ProtectedRoute>
         } />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

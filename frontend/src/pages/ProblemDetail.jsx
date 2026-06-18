@@ -46,18 +46,19 @@ export default function ProblemDetail() {
   const [running, setRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("description"); // description | submissions
 
-  // ── Fetch real problem from backend ──
-  // useEffect(() => {
-  //   setLoading(true);
-  //   fetch(`http://localhost:5000/api/problems/${id}`, { credentials: "include" })
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       setProblem(data.problem);
-  //       setCode(data.problem.starterCode[language]);
-  //       setLoading(false);
-  //     })
-  //     .catch(() => setLoading(false));
-  // }, [id]);
+  //── Fetch real problem from backend ──
+  useEffect(() => {
+    setLoading(true);
+    fetch(`http://localhost:3000/api/problems/${id}`,
+      { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        setProblem(data.problem);
+        setCode(data.problem.starterCode[language]);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [id]);
 
   // Update code when language changes
   const handleLanguageChange = (lang) => {

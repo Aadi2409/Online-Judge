@@ -1,6 +1,7 @@
 const express = require("express");
 const DBConnection = require("./db/dbConnect");
 const authRoutes = require("./routes/authRoutes");
+const problemRoutes = require("./routes/problemRoutes");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 DBConnection();
 app.use('/api/auth', authRoutes);
+app.use('/api/problems', problemRoutes);
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
