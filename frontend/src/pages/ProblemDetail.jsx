@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-const diffColor  = { Easy: "#4ade80", Medium: "#facc15", Hard: "#f87171" };
-const diffBg     = { Easy: "rgba(74,222,128,0.08)", Medium: "rgba(250,204,21,0.08)", Hard: "rgba(248,113,113,0.08)" };
+const diffColor = { Easy: "#4ade80", Medium: "#facc15", Hard: "#f87171" };
+const diffBg = { Easy: "rgba(74,222,128,0.08)", Medium: "rgba(250,204,21,0.08)", Hard: "rgba(248,113,113,0.08)" };
 const diffBorder = { Easy: "rgba(74,222,128,0.25)", Medium: "rgba(250,204,21,0.25)", Hard: "rgba(248,113,113,0.25)" };
 
 const languages = ["javascript", "python", "cpp", "java"];
@@ -38,10 +38,10 @@ export default function ProblemDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [problem, setProblem] = useState(placeholderProblem);
-  const [loading, setLoading] = useState(false);
+  const [problem, setProblem] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState(placeholderProblem.starterCode.javascript);
+  const [code, setCode] = useState();
   const [output, setOutput] = useState("");
   const [running, setRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("description"); // description | submissions
@@ -54,7 +54,7 @@ export default function ProblemDetail() {
       .then((res) => res.json())
       .then((data) => {
         setProblem(data.problem);
-        setCode(data.problem.starterCode[language]);
+        setCode(data.problem.starterCode[language] || "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -66,25 +66,65 @@ export default function ProblemDetail() {
     setCode(problem.starterCode[lang] || "");
   };
 
-  // ── Run code (placeholder — wire to compiler later) ──
-  const handleRun = () => {
+  const handleRun = async () => {
     setRunning(true);
     setOutput("");
-    // TEMP simulated output — replace with compiler API call
-    setTimeout(() => {
-      setOutput("Running test cases...\n\n✓ Test Case 1: Passed\n✓ Test Case 2: Passed\n\nAll test cases passed!");
+
+    try {
+      const res = await fetch("http://localhost:3000/api/compiler/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          language: language,   // the language selected in the toolbar e.g. "javascript"
+          code: code,           // the code written in the textarea
+          problemId: id,        // the problem id from useParams
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setOutput(`Error: ${data.message || "Something went wrong."}`);
+      } else {
+        setOutput(data.output); // backend sends back the result string
+      }
+    } catch (err) {
+      setOutput("Server error. Could not run code.");
+    } finally {
       setRunning(false);
-    }, 1200);
+    }
   };
 
   // ── Submit code (placeholder — wire to compiler + grading later) ──
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setRunning(true);
     setOutput("");
-    setTimeout(() => {
-      setOutput("Submitting...\n\n✓ Accepted\nRuntime: 56ms (faster than 78% of submissions)\nMemory: 42.1MB");
+
+    try {
+      const res = await fetch("http://localhost:3000/api/compiler/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          language: language,   // selected language
+          code: code,           // code from textarea
+          problemId: id,        // problem id from useParams
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setOutput(`Error: ${data.message || "Something went wrong."}`);
+      } else {
+        setOutput(data.output); // backend sends verdict + runtime + memory
+      }
+    } catch (err) {
+      setOutput("Server error. Could not submit code.");
+    } finally {
       setRunning(false);
-    }, 1500);
+    }
   };
 
   if (loading) {
