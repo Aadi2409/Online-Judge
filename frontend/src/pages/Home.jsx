@@ -9,12 +9,7 @@ const problems = [
   { id: 5, title: "LRU Cache", difficulty: "Hard", category: "Design", solved: false },
 ];
 
-const stats = [
-  { label: "Problems Solved", value: "128", sub: "of 450 total" },
-  { label: "Current Streak", value: "14", sub: "days" },
-  { label: "Rank", value: "#842", sub: "globally" },
-  { label: "Accuracy", value: "76%", sub: "success rate" },
-];
+
 
 const diffColor = {
   Easy: "#4ade80",
@@ -25,14 +20,44 @@ const diffColor = {
 export default function Home() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [username] = useState(() => {
-    try {
-      const stored = localStorage.getItem("user");
-      return stored ? JSON.parse(stored)?.username || "" : "";
-    } catch (err) {
-      return "";
-    }
+
+  const [userStats, setUserStats] = useState({
+    problemsSolved: 0,
+    streak: 0,
+    rank: "-",
+    accuracy: "0%",
   });
+
+  const stats = [
+    { label: "Problems Solved", value: userStats.problemsSolved, sub: "of 450 total" },
+    { label: "Current Streak", value: userStats.streak, sub: "days" },
+    { label: "Rank", value: userStats.rank, sub: "globally" },
+    { label: "Accuracy", value: userStats.accuracy, sub: "success rate" },
+  ];
+
+  useEffect(() => {
+    // get user from localStorage (set during login)
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(storedUser);
+
+    // fetch real stats from backend
+    fetch("http://localhost:3000/api/user/stats", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setUserStats({
+          problemsSolved: data.problemsSolved,
+          streak: data.streak,
+          rank: `#${data.rank}`,
+          accuracy: `${data.accuracy}%`,
+        });
+      })
+      .catch(() => { }); // silently fail — keeps default zeros
+  }, []);
+
+  const [user, setUser] = useState(null);
+
 
   const handleLogout = async () => {
     await fetch("http://localhost:3000/api/auth/logout", {
@@ -40,7 +65,7 @@ export default function Home() {
       credentials: "include", // sends cookie so backend can clear it
     });
     localStorage.removeItem("user");
-    navigate("/login");
+    navigate("/home");
   };
 
   return (
@@ -117,7 +142,7 @@ export default function Home() {
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-px" style={{ background: "rgba(220,38,38,0.6)" }} />
           <span className="text-xs tracking-[0.35em] uppercase" style={{ color: "#dc2626" }}>
-            Welcome back{username ? `, ${username}` : ""}
+            Welcome back, {user?.username || ""}
           </span>
         </div>
         <h1 className="text-5xl font-black uppercase mb-2"
@@ -220,8 +245,8 @@ export default function Home() {
             </div>
             <div className="px-5 py-5">
               {[{ label: "Easy", done: 68, total: 150, color: "#4ade80" },
-                { label: "Medium", done: 45, total: 200, color: "#facc15" },
-                { label: "Hard", done: 15, total: 100, color: "#f87171" }].map((bar) => (
+              { label: "Medium", done: 45, total: 200, color: "#facc15" },
+              { label: "Hard", done: 15, total: 100, color: "#f87171" }].map((bar) => (
                 <div key={bar.label} className="mb-4">
                   <div className="flex justify-between mb-1.5">
                     <span className="text-xs uppercase tracking-widest" style={{ color: bar.color }}>{bar.label}</span>
@@ -248,8 +273,8 @@ export default function Home() {
               {[
                 { label: "→ Daily Challenge", action: () => navigate("/problems") },
                 { label: "→ Random Problem", action: () => navigate("/problems") },
-                { label: "→ My Submissions", action: () => {} },
-                { label: "→ Bookmarks", action: () => {} },
+                { label: "→ My Submissions", action: () => { } },
+                { label: "→ Bookmarks", action: () => { } },
               ].map((item) => (
                 <button key={item.label}
                   onClick={item.action}

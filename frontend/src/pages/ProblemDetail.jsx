@@ -7,33 +7,6 @@ const diffBorder = { Easy: "rgba(74,222,128,0.25)", Medium: "rgba(250,204,21,0.2
 
 const languages = ["javascript", "python", "cpp", "java"];
 
-// TEMP placeholder data — replace with fetched problem from backend
-const placeholderProblem = {
-  _id: "placeholder",
-  title: "Two Sum",
-  difficulty: "Easy",
-  category: "Arrays",
-  tags: ["Array", "Hash Table"],
-  description:
-    "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.",
-  constraints: [
-    "2 <= nums.length <= 10^4",
-    "-10^9 <= nums[i] <= 10^9",
-    "-10^9 <= target <= 10^9",
-    "Only one valid answer exists.",
-  ],
-  examples: [
-    { input: "nums = [2,7,11,15], target = 9", output: "[0,1]", explanation: "Because nums[0] + nums[1] == 9, we return [0, 1]." },
-    { input: "nums = [3,2,4], target = 6", output: "[1,2]", explanation: "" },
-  ],
-  starterCode: {
-    javascript: "function twoSum(nums, target) {\n  // your code here\n}",
-    python: "def two_sum(nums, target):\n    # your code here\n    pass",
-    cpp: "vector<int> twoSum(vector<int>& nums, int target) {\n    // your code here\n}",
-    java: "public int[] twoSum(int[] nums, int target) {\n    // your code here\n}",
-  },
-};
-
 export default function ProblemDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,6 +18,9 @@ export default function ProblemDetail() {
   const [output, setOutput] = useState("");
   const [running, setRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("description"); // description | submissions
+  const [activeConsoleTab, setActiveConsoleTab] = useState("testcases"); // testcases | custom | output
+  const [customInput, setCustomInput] = useState("");
+  const [isCustom, setIsCustom] = useState(false); // tracks if run was triggered with custom input
 
   //── Fetch real problem from backend ──
   useEffect(() => {
@@ -69,6 +45,7 @@ export default function ProblemDetail() {
   const handleRun = async () => {
     setRunning(true);
     setOutput("");
+    setActiveConsoleTab("output"); // auto switch to output tab when running
 
     try {
       const res = await fetch("http://localhost:3000/api/compiler/run", {
@@ -76,18 +53,19 @@ export default function ProblemDetail() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          language: language,   // the language selected in the toolbar e.g. "javascript"
-          code: code,           // the code written in the textarea
-          problemId: id,        // the problem id from useParams
+          language: language,
+          code: code,
+          problemId: id,
+          customInput: isCustom ? customInput : null, // send custom input only if toggled
+          useCustomInput: isCustom,
         }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         setOutput(`Error: ${data.message || "Something went wrong."}`);
       } else {
-        setOutput(data.output); // backend sends back the result string
+        setOutput(data.output);
       }
     } catch (err) {
       setOutput("Server error. Could not run code.");
@@ -372,21 +350,164 @@ export default function ProblemDetail() {
             </button>
           </div>
 
-          {/* Output console */}
-          <div className="px-5 py-4" style={{ borderTop: "1px solid rgba(220,38,38,0.15)", minHeight: "140px", maxHeight: "220px", overflowY: "auto" }}>
-            <div className="text-xs uppercase tracking-widest font-bold mb-2" style={{ color: "#dc2626", letterSpacing: "0.2em" }}>
-              Output
+          {/* Console — tabs + content */}
+          <div style={{ borderTop: "1px solid rgba(220,38,38,0.15)", minHeight: "180px", maxHeight: "260px", display: "flex", flexDirection: "column" }}>
+
+            {/* Console tab bar */}
+            <div className="flex items-center justify-between px-5"
+              style={{ borderBottom: "1px solid rgba(220,38,38,0.1)", background: "rgba(5,5,5,0.6)" }}>
+              <div className="flex">
+                {[
+                  { key: "testcases", label: "Test Cases" },
+                  { key: "custom", label: "Custom Input" },
+                  { key: "output", label: "Output" },
+                ].map((tab) => (
+                  <button key={tab.key}
+                    onClick={() => setActiveConsoleTab(tab.key)}
+                    className="py-2.5 px-4 text-xs uppercase tracking-widest transition-colors duration-200"
+                    style={{
+                      color: activeConsoleTab === tab.key ? "#dc2626" : "#555",
+                      background: "none",
+                      border: "none",
+                      borderBottom: activeConsoleTab === tab.key ? "2px solid #dc2626" : "2px solid transparent",
+                      cursor: "pointer",
+                      letterSpacing: "0.15em",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom input toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs uppercase tracking-widest" style={{ color: "#555" }}>Custom</span>
+                <div
+                  onClick={() => {
+                    setIsCustom(!isCustom);
+                    setActiveConsoleTab(!isCustom ? "custom" : "testcases");
+                  }}
+                  className="relative cursor-pointer transition-all duration-200"
+                  style={{
+                    width: "36px",
+                    height: "20px",
+                    background: isCustom ? "rgba(220,38,38,0.8)" : "rgba(255,255,255,0.1)",
+                    borderRadius: "10px",
+                    border: isCustom ? "1px solid rgba(220,38,38,0.9)" : "1px solid rgba(255,255,255,0.15)",
+                  }}
+                >
+                  <div style={{
+                    position: "absolute",
+                    top: "2px",
+                    left: isCustom ? "18px" : "2px",
+                    width: "14px",
+                    height: "14px",
+                    background: isCustom ? "#fff" : "#666",
+                    borderRadius: "50%",
+                    transition: "left 0.2s ease",
+                  }} />
+                </div>
+              </div>
             </div>
-            <pre className="text-xs whitespace-pre-wrap" style={{ color: output ? "#ccc" : "#444", fontFamily: "'Courier New', monospace" }}>
-              {output || "Run your code to see output here..."}
-            </pre>
+
+            {/* Console content */}
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+
+              {/* Test Cases tab */}
+              {activeConsoleTab === "testcases" && (
+                <div>
+                  {problem.testCases?.filter(tc => !tc.isHidden).length === 0 ? (
+                    <p className="text-xs" style={{ color: "#444" }}>No visible test cases.</p>
+                  ) : (
+                    problem.testCases?.filter(tc => !tc.isHidden).map((tc, i) => (
+                      <div key={i} className="mb-4">
+                        <div className="text-xs uppercase tracking-widest font-bold mb-2"
+                          style={{ color: "#dc2626" }}>
+                          Case {i + 1}
+                        </div>
+                        <div className="mb-2">
+                          <div className="text-xs mb-1 uppercase tracking-widest" style={{ color: "#555" }}>Input</div>
+                          <pre className="text-xs px-3 py-2"
+                            style={{
+                              background: "rgba(255,255,255,0.04)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              borderRadius: "2px",
+                              color: "#ccc",
+                              fontFamily: "'Courier New', monospace",
+                            }}>
+                            {tc.input}
+                          </pre>
+                        </div>
+                        <div>
+                          <div className="text-xs mb-1 uppercase tracking-widest" style={{ color: "#555" }}>Expected Output</div>
+                          <pre className="text-xs px-3 py-2"
+                            style={{
+                              background: "rgba(255,255,255,0.04)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              borderRadius: "2px",
+                              color: "#ccc",
+                              fontFamily: "'Courier New', monospace",
+                            }}>
+                            {tc.expectedOutput}
+                          </pre>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Custom Input tab */}
+              {activeConsoleTab === "custom" && (
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-2" style={{ color: "#555" }}>
+                    Enter your custom input below, then click Run Code
+                  </div>
+                  <textarea
+                    value={customInput}
+                    onChange={(e) => setCustomInput(e.target.value)}
+                    placeholder={"e.g.\n[2,7,11,15]\n9"}
+                    spellCheck={false}
+                    className="w-full p-3 text-xs outline-none resize-none"
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "2px",
+                      color: "#e5e5e5",
+                      fontFamily: "'Courier New', monospace",
+                      height: "120px",
+                      caretColor: "#dc2626",
+                    }}
+                    onFocus={(e) => (e.target.style.border = "1px solid rgba(220,38,38,0.5)")}
+                    onBlur={(e) => (e.target.style.border = "1px solid rgba(255,255,255,0.08)")}
+                  />
+                  {!isCustom && (
+                    <p className="text-xs mt-2" style={{ color: "#f87171" }}>
+                      ⚠ Toggle Custom on to use this input when running
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Output tab */}
+              {activeConsoleTab === "output" && (
+                <pre className="text-xs whitespace-pre-wrap"
+                  style={{
+                    color: output ? "#ccc" : "#444",
+                    fontFamily: "'Courier New', monospace",
+                    lineHeight: "1.6",
+                  }}>
+                  {output || "Run your code to see output here..."}
+                </pre>
+              )}
+            </div>
           </div>
+
+          {/* Bottom accent */}
+          <div className="fixed bottom-0 left-0 right-0 h-px"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(220,38,38,0.3), transparent)" }} />
         </div>
       </div>
-
-      {/* Bottom accent */}
-      <div className="fixed bottom-0 left-0 right-0 h-px"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(220,38,38,0.3), transparent)" }} />
     </div>
   );
 }

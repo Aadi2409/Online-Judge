@@ -36,5 +36,5 @@ export default function ProtectedRoute({ children }) {
     }
 
     // if verified → show the page, if not → kick to login
-    return status === "ok" ? children : <Navigate to="/login" />;
+    return status === "ok" ? children : <Navigate to="/home" />;
 }
