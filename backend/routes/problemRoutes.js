@@ -16,8 +16,8 @@ router.get("/:id", verifyToken, getProblemById);
 
 // Restricted — only logged in users can create/edit/delete
 // (later you can add an isAdmin check here too)
-router.post("/", verifyToken, isAdmin, createProblem);
+router.post("/", verifyToken, createProblem);
 router.put("/:id", verifyToken, isAdmin, updateProblem);
-router.delete("/:id", verifyToken, isAdmin, deleteProblem);
+router.delete("/:id", verifyToken, deleteProblem);
 
 module.exports = router;

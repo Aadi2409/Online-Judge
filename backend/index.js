@@ -6,8 +6,6 @@ const compilerRoutes = require("./routes/compilerRoutes");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
-
-
 const app = express();
 
 app.use(cookieParser());
@@ -17,7 +15,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 DBConnection();
 app.use('/api/auth', authRoutes);
